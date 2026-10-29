@@ -1,15 +1,42 @@
 "use client";
 
-import { useState, useTransition, type FormEvent } from "react";
+import { useEffect, useState, useTransition, type FormEvent } from "react";
 import { checkNote, type Note } from "./actions";
+
+const STORAGE_KEY = "aurora-notes";
 
 const inputClass =
   "w-full rounded-md border border-slate-300 bg-white/80 px-3 py-2 text-slate-900 placeholder:text-slate-400 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-400/40 dark:border-slate-700 dark:bg-slate-950/60 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-teal-400 dark:focus:ring-teal-400/30";
 
 export default function Home() {
-  const [notes, setNotes] = useState<Note[]>([]);
+  // null until saved notes have been read, so the empty initial state
+  // never overwrites what's in localStorage.
+  const [notes, setNotes] = useState<Note[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+
+  useEffect(() => {
+    let saved: Note[] = [];
+    try {
+      const parsed: unknown = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "[]");
+      if (Array.isArray(parsed)) saved = parsed as Note[];
+    } catch {
+      // Storage blocked or data corrupt: start with no notes.
+    }
+    // Reading localStorage after the first render keeps server and client
+    // HTML identical; this one-time sync is the intended use.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setNotes(saved);
+  }, []);
+
+  useEffect(() => {
+    if (notes === null) return;
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
+    } catch {
+      // Storage full or blocked: notes still work for this session.
+    }
+  }, [notes]);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -23,7 +50,7 @@ export default function Home() {
         return;
       }
       setError(null);
-      setNotes((prev) => [result.note, ...prev]);
+      setNotes((prev) => [result.note, ...(prev ?? [])]);
       form.reset();
     });
   }
@@ -91,10 +118,10 @@ export default function Home() {
 
       <section className="flex flex-col gap-4">
         <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-200">
-          Notes {notes.length > 0 && <span className="text-slate-500">({notes.length})</span>}
+          Notes {notes && notes.length > 0 && <span className="text-slate-500">({notes.length})</span>}
         </h2>
 
-        {notes.length === 0 ? (
+        {notes === null ? null : notes.length === 0 ? (
           <p className="text-sm text-slate-500">No notes yet.</p>
         ) : (
           <ul className="flex flex-col gap-3">
