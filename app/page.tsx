@@ -62,6 +62,14 @@ export default function Home() {
     setSelectedId(note.id);
   }
 
+  function handleDelete(id: string) {
+    const remaining = allNotes.filter((n) => n.id !== id);
+    setNotes(remaining);
+    setSelectedId(null);
+    // Leave the tag filter if its last note was just deleted
+    if (activeTag && !remaining.some((n) => n.tags.includes(activeTag))) setActiveTag(null);
+  }
+
   return (
     <div className="mx-auto flex w-full max-w-[1440px] flex-1 flex-col gap-3 p-3 sm:gap-4 sm:p-4 lg:h-dvh lg:flex-row">
       <Sidebar
@@ -98,7 +106,12 @@ export default function Home() {
 
         <div className="flex flex-1 flex-col px-5 py-6 sm:px-8 lg:overflow-y-auto">
           <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col">
-            {current ? <NoteView note={current} /> : <NoteEditor onSaved={handleSaved} />}
+            {current ? (
+              // Keyed so an open delete confirmation resets when switching notes
+              <NoteView key={current.id} note={current} onDelete={() => handleDelete(current.id)} />
+            ) : (
+              <NoteEditor onSaved={handleSaved} />
+            )}
           </div>
         </div>
       </main>
