@@ -10,6 +10,14 @@ export function snippet(body: string, length = 110): string {
   return text.length > length ? `${text.slice(0, length).trimEnd()}…` : text;
 }
 
+// True when every word in the query appears in the note's title or body,
+// ignoring case. An empty query matches everything.
+export function matchesSearch(note: { title: string; body: string }, query: string): boolean {
+  const words = query.toLowerCase().split(/\s+/).filter(Boolean);
+  const text = `${note.title}\n${note.body}`.toLowerCase();
+  return words.every((word) => text.includes(word));
+}
+
 // Full class strings so Tailwind can see them at build time.
 const TAG_COLORS = [
   {
