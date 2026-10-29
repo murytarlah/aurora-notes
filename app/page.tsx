@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { Note } from "./actions";
+import { ArrowLeftIcon } from "./icons";
 import { NoteEditor } from "./note-editor";
 import { NoteList } from "./note-list";
 import { matchesSearch } from "./note-utils";
@@ -20,6 +21,9 @@ export default function Home() {
   // null shows every note
   const [activeTag, setActiveTag] = useState<string | null>(null);
   const [query, setQuery] = useState("");
+  // Phones show one screen at a time: the note list, or the note pane.
+  // From lg up all panes are visible and this is ignored.
+  const [isPaneOpen, setIsPaneOpen] = useState(false);
 
   useEffect(() => {
     let saved: Note[] = [];
@@ -57,6 +61,14 @@ export default function Home() {
     for (const tag of note.tags) tagCounts.set(tag, (tagCounts.get(tag) ?? 0) + 1);
   }
 
+  // Opens a note (or the new-note form for null) in the pane.
+  function openNote(id: string | null) {
+    setSelectedId(id);
+    setIsPaneOpen(true);
+    // The list may have been scrolled; start the pane at the top on phones
+    window.scrollTo(0, 0);
+  }
+
   function handleSaved(note: Note) {
     setNotes((prev) => [note, ...(prev ?? [])]);
     setSelectedId(note.id);
@@ -66,6 +78,7 @@ export default function Home() {
     const remaining = allNotes.filter((n) => n.id !== id);
     setNotes(remaining);
     setSelectedId(null);
+    setIsPaneOpen(false);
     // Leave the tag filter if its last note was just deleted
     if (activeTag && !remaining.some((n) => n.tags.includes(activeTag))) setActiveTag(null);
   }
@@ -77,22 +90,34 @@ export default function Home() {
         tagCounts={[...tagCounts.entries()].sort(([a], [b]) => a.localeCompare(b))}
         activeTag={activeTag}
         onSelectTag={setActiveTag}
-        onNewNote={() => setSelectedId(null)}
+        onNewNote={() => openNote(null)}
+        className={isPaneOpen ? "hidden lg:flex" : "flex"}
       />
 
       <NoteList
+        className={isPaneOpen ? "hidden lg:flex" : "flex"}
         notes={visibleNotes}
         hasNotes={allNotes.length > 0}
         heading={activeTag ? `#${activeTag}` : "All notes"}
         query={query}
         onQueryChange={setQuery}
         selectedId={current?.id ?? null}
-        onSelect={setSelectedId}
+        onSelect={openNote}
       />
 
-      <main className={`${panelClass} flex min-w-0 flex-1 flex-col lg:overflow-hidden`}>
+      <main
+        className={`${panelClass} ${isPaneOpen ? "flex" : "hidden lg:flex"} min-w-0 flex-1 flex-col lg:overflow-hidden`}
+      >
         <header className="flex items-center justify-between gap-3 border-b border-slate-200/80 px-5 py-3.5 sm:px-8 dark:border-slate-800">
-          <p className="text-sm text-slate-500 dark:text-slate-400">
+          <button
+            type="button"
+            onClick={() => setIsPaneOpen(false)}
+            className="-ml-2 flex items-center gap-1.5 rounded-lg px-2 py-1 text-sm font-semibold text-teal-700 transition hover:bg-teal-500/10 lg:hidden dark:text-teal-300"
+          >
+            <ArrowLeftIcon className="h-4 w-4" />
+            Notes
+          </button>
+          <p className="hidden text-sm text-slate-500 lg:block dark:text-slate-400">
             Library <span className="mx-1.5 text-slate-300 dark:text-slate-600">/</span>
             <span className="font-medium text-slate-800 dark:text-slate-200">
               {current ? "Note" : "New note"}
