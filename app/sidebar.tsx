@@ -1,0 +1,74 @@
+import { LayersIcon, NotebookPenIcon, PlusIcon, SparklesIcon } from "./icons";
+import { tagColor } from "./note-utils";
+import { gradientButtonClass, panelClass, sectionLabelClass } from "./ui";
+
+type SidebarProps = {
+  noteCount: number;
+  tagCounts: [tag: string, count: number][];
+  onNewNote: () => void;
+};
+
+const navItemClass = "flex shrink-0 items-center gap-2.5 rounded-xl px-3 py-2 text-sm lg:w-full";
+
+export function Sidebar({ noteCount, tagCounts, onNewNote }: SidebarProps) {
+  return (
+    <aside className={`${panelClass} flex flex-col gap-5 p-4 lg:w-64 lg:shrink-0 lg:p-5`}>
+      <div className="flex items-center justify-between gap-3 lg:flex-col lg:items-stretch lg:gap-6">
+        <div className="flex items-center gap-2.5">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-linear-to-br from-emerald-500 via-teal-500 to-violet-600 text-white shadow-md shadow-teal-900/20">
+            <NotebookPenIcon className="h-5 w-5" />
+          </div>
+          <span className="bg-linear-to-r from-emerald-600 via-cyan-600 to-violet-600 bg-clip-text text-xl font-bold tracking-tight text-transparent dark:from-emerald-300 dark:via-cyan-300 dark:to-violet-400">
+            Aurora Notes
+          </span>
+        </div>
+        <button type="button" onClick={onNewNote} className={gradientButtonClass}>
+          <PlusIcon className="h-4 w-4" />
+          New note
+        </button>
+      </div>
+
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-2">
+          <p className={`${sectionLabelClass} hidden lg:block`}>Library</p>
+          <p
+            className={`${navItemClass} bg-teal-500/10 font-semibold text-teal-900 ring-1 ring-teal-500/30 dark:bg-teal-400/10 dark:text-teal-100 dark:ring-teal-400/30`}
+          >
+            <LayersIcon className="h-4 w-4" />
+            <span className="flex-1">All notes</span>
+            <span className="text-xs tabular-nums opacity-70">{noteCount}</span>
+          </p>
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <p className={sectionLabelClass}>Tags</p>
+          {tagCounts.length === 0 ? (
+            <p className="px-3 text-xs text-slate-500 dark:text-slate-400">
+              Tags you add will show up here.
+            </p>
+          ) : (
+            <ul className="-mx-1 flex gap-1 overflow-x-auto px-1 pb-1 lg:flex-col lg:overflow-visible">
+              {tagCounts.map(([tag, count]) => (
+                <li key={tag} className={`${navItemClass} text-slate-600 dark:text-slate-300`}>
+                  <span className={`h-2 w-2 rounded-full ${tagColor(tag).dot}`} />
+                  <span className="flex-1">{tag}</span>
+                  <span className="text-xs tabular-nums opacity-70">{count}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
+
+      <div className="mt-auto hidden flex-col gap-3 rounded-xl bg-linear-to-br from-emerald-500/10 via-cyan-500/10 to-violet-500/10 p-4 lg:flex">
+        <SparklesIcon className="h-5 w-5 text-violet-500 dark:text-violet-400" />
+        <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+          Your thoughts, organised.
+        </p>
+        <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-400">
+          Write in Markdown and organise your notes with tags.
+        </p>
+      </div>
+    </aside>
+  );
+}
