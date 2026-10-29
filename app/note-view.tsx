@@ -21,7 +21,7 @@ export function NoteView({ note, onDelete }: NoteViewProps) {
   return (
     <article className="flex flex-1 flex-col gap-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <h1 className="min-w-0 text-3xl font-bold tracking-tight text-slate-900 [overflow-wrap:anywhere] sm:text-4xl dark:text-slate-100">
+        <h1 className="min-w-0 text-2xl font-bold tracking-tight text-slate-900 [overflow-wrap:anywhere] sm:text-4xl dark:text-slate-100">
           {note.title}
         </h1>
 

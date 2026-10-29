@@ -56,7 +56,7 @@ export function NoteEditor({ onSaved }: { onSaved: (note: Note) => void }) {
           name="title"
           type="text"
           autoFocus
-          className="w-full border-none bg-transparent text-3xl font-bold tracking-tight text-slate-900 placeholder:text-slate-300 focus:outline-none sm:text-4xl dark:text-slate-100 dark:placeholder:text-slate-600"
+          className="w-full border-none bg-transparent text-2xl font-bold tracking-tight text-slate-900 placeholder:text-slate-300 focus:outline-none sm:text-4xl dark:text-slate-100 dark:placeholder:text-slate-600"
           placeholder="Riverside Garden Cleanup"
         />
       </label>

@@ -13,6 +13,7 @@ type NoteListProps = {
   onQueryChange: (query: string) => void;
   selectedId: string | null;
   onSelect: (id: string) => void;
+  className?: string;
 };
 
 const emptyStateClass =
@@ -26,9 +27,10 @@ export function NoteList({
   onQueryChange,
   selectedId,
   onSelect,
+  className = "",
 }: NoteListProps) {
   return (
-    <section className={`${panelClass} flex flex-col gap-4 p-4 lg:w-80 lg:shrink-0 lg:overflow-hidden lg:p-5`}>
+    <section className={`${panelClass} ${className} flex-col gap-4 p-4 lg:w-80 lg:shrink-0 lg:overflow-hidden lg:p-5`}>
       <div className="flex items-end justify-between gap-2">
         <div>
           <p className={sectionLabelClass}>Notes</p>
