@@ -1,69 +1,131 @@
-import Image from "next/image";
+"use client";
+
+import { useState, useTransition, type FormEvent } from "react";
+import { checkNote, type Note } from "./actions";
+
+const inputClass =
+  "w-full rounded-md border border-slate-300 bg-white/80 px-3 py-2 text-slate-900 placeholder:text-slate-400 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-400/40 dark:border-slate-700 dark:bg-slate-950/60 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-teal-400 dark:focus:ring-teal-400/30";
 
 export default function Home() {
+  const [notes, setNotes] = useState<Note[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+
+    startTransition(async () => {
+      const result = await checkNote(formData);
+      if ("error" in result) {
+        setError(result.error);
+        return;
+      }
+      setError(null);
+      setNotes((prev) => [result.note, ...prev]);
+      form.reset();
+    });
+  }
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+    <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-10 px-4 py-12 sm:px-6">
+      <h1 className="bg-linear-to-r from-emerald-500 via-cyan-500 to-violet-500 bg-clip-text text-3xl font-semibold tracking-tight text-transparent dark:from-emerald-300 dark:via-cyan-300 dark:to-violet-400">
+        Aurora Notes
+      </h1>
+
+      <form
+        onSubmit={handleSubmit}
+        className="flex flex-col gap-4 rounded-lg border border-slate-200 bg-white/70 p-5 shadow-lg shadow-cyan-900/5 backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/50 dark:shadow-black/30"
+      >
+        {error && (
+          <p
+            role="alert"
+            className="flex items-center gap-2 rounded-md border border-red-300 border-l-4 border-l-red-600 bg-red-50 px-3 py-2 text-sm font-medium text-red-800 dark:border-red-900 dark:border-l-red-500 dark:bg-red-950/60 dark:text-red-200"
+          >
+            <svg
+              aria-hidden="true"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+              className="h-4 w-4 shrink-0 text-red-600 dark:text-red-400"
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+              <path
+                fillRule="evenodd"
+                d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0Zm-8-5a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-1.5 0v-4.5A.75.75 0 0 1 10 5Zm0 10a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"
+                clipRule="evenodd"
+              />
+            </svg>
+            {error}
           </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+        )}
+
+        <label className="flex flex-col gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
+          Title
+          <input name="title" type="text" className={inputClass} placeholder="Note title" />
+        </label>
+
+        <label className="flex flex-col gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
+          Body
+          <textarea name="body" rows={5} className={inputClass} placeholder="Write your note…" />
+        </label>
+
+        <label className="flex flex-col gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
+          Tags
+          <input
+            name="tags"
+            type="text"
+            className={inputClass}
+            placeholder="work, ideas, todo"
+          />
+          <span className="text-xs font-normal text-slate-500">Separate tags with commas.</span>
+        </label>
+
+        <button
+          type="submit"
+          disabled={isPending}
+          className="self-start rounded-md bg-linear-to-r from-emerald-600 via-teal-600 to-violet-600 px-4 py-2 text-sm font-medium text-white shadow-md shadow-teal-900/20 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {isPending ? "Saving…" : "Add note"}
+        </button>
+      </form>
+
+      <section className="flex flex-col gap-4">
+        <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-200">
+          Notes {notes.length > 0 && <span className="text-slate-500">({notes.length})</span>}
+        </h2>
+
+        {notes.length === 0 ? (
+          <p className="text-sm text-slate-500">No notes yet.</p>
+        ) : (
+          <ul className="flex flex-col gap-3">
+            {notes.map((note) => (
+              <li
+                key={note.id}
+                className="rounded-lg border border-slate-200 border-l-4 border-l-teal-500 bg-white/70 p-4 backdrop-blur-md dark:border-slate-800 dark:border-l-teal-400 dark:bg-slate-900/50"
+              >
+                <h3 className="font-semibold text-slate-900 dark:text-slate-100">
+                  {note.title}
+                </h3>
+                <p className="mt-1 whitespace-pre-wrap text-sm text-slate-700 dark:text-slate-300">
+                  {note.body}
+                </p>
+                {note.tags.length > 0 && (
+                  <ul className="mt-3 flex flex-wrap gap-1.5">
+                    {note.tags.map((tag) => (
+                      <li
+                        key={tag}
+                        className="rounded-full border border-teal-200 bg-teal-50 px-2.5 py-0.5 text-xs text-teal-800 dark:border-teal-800/60 dark:bg-teal-950/50 dark:text-teal-200"
+                      >
+                        {tag}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+    </main>
   );
 }
