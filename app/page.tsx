@@ -16,6 +16,8 @@ export default function Home() {
   const [notes, setNotes] = useState<Note[] | null>(null);
   // The note open in the right pane; null shows the new-note form.
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  // null shows every note
+  const [activeTag, setActiveTag] = useState<string | null>(null);
 
   useEffect(() => {
     let saved: Note[] = [];
@@ -42,6 +44,7 @@ export default function Home() {
 
   const allNotes = notes ?? [];
   const current = allNotes.find((n) => n.id === selectedId);
+  const visibleNotes = activeTag && notes ? notes.filter((n) => n.tags.includes(activeTag)) : notes;
 
   const tagCounts = new Map<string, number>();
   for (const note of allNotes) {
@@ -58,10 +61,17 @@ export default function Home() {
       <Sidebar
         noteCount={allNotes.length}
         tagCounts={[...tagCounts.entries()].sort(([a], [b]) => a.localeCompare(b))}
+        activeTag={activeTag}
+        onSelectTag={setActiveTag}
         onNewNote={() => setSelectedId(null)}
       />
 
-      <NoteList notes={notes} selectedId={current?.id ?? null} onSelect={setSelectedId} />
+      <NoteList
+        notes={visibleNotes}
+        heading={activeTag ? `#${activeTag}` : "All notes"}
+        selectedId={current?.id ?? null}
+        onSelect={setSelectedId}
+      />
 
       <main className={`${panelClass} flex min-w-0 flex-1 flex-col lg:overflow-hidden`}>
         <header className="flex items-center justify-between gap-3 border-b border-slate-200/80 px-5 py-3.5 sm:px-8 dark:border-slate-800">

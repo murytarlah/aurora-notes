@@ -6,18 +6,19 @@ import { panelClass, sectionLabelClass } from "./ui";
 type NoteListProps = {
   // null while saved notes are still being read
   notes: Note[] | null;
+  heading: string;
   selectedId: string | null;
   onSelect: (id: string) => void;
 };
 
-export function NoteList({ notes, selectedId, onSelect }: NoteListProps) {
+export function NoteList({ notes, heading, selectedId, onSelect }: NoteListProps) {
   return (
     <section className={`${panelClass} flex flex-col gap-4 p-4 lg:w-80 lg:shrink-0 lg:overflow-hidden lg:p-5`}>
       <div className="flex items-end justify-between gap-2">
         <div>
           <p className={sectionLabelClass}>Notes</p>
           <h2 className="mt-1 text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
-            All notes
+            {heading}
           </h2>
         </div>
         {notes && (
