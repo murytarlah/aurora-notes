@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import type { Note } from "./actions";
 import { NoteEditor } from "./note-editor";
 import { NoteList } from "./note-list";
+import { matchesSearch } from "./note-utils";
 import { NoteView } from "./note-view";
 import { Sidebar } from "./sidebar";
 import { panelClass } from "./ui";
@@ -18,6 +19,7 @@ export default function Home() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   // null shows every note
   const [activeTag, setActiveTag] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
 
   useEffect(() => {
     let saved: Note[] = [];
@@ -44,7 +46,11 @@ export default function Home() {
 
   const allNotes = notes ?? [];
   const current = allNotes.find((n) => n.id === selectedId);
-  const visibleNotes = activeTag && notes ? notes.filter((n) => n.tags.includes(activeTag)) : notes;
+  const visibleNotes =
+    notes &&
+    notes.filter(
+      (n) => (!activeTag || n.tags.includes(activeTag)) && matchesSearch(n, query),
+    );
 
   const tagCounts = new Map<string, number>();
   for (const note of allNotes) {
@@ -68,7 +74,10 @@ export default function Home() {
 
       <NoteList
         notes={visibleNotes}
+        hasNotes={allNotes.length > 0}
         heading={activeTag ? `#${activeTag}` : "All notes"}
+        query={query}
+        onQueryChange={setQuery}
         selectedId={current?.id ?? null}
         onSelect={setSelectedId}
       />

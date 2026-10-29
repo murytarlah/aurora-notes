@@ -1,17 +1,32 @@
 import type { Note } from "./actions";
-import { NotebookPenIcon } from "./icons";
+import { NotebookPenIcon, SearchIcon } from "./icons";
 import { snippet, tagColor } from "./note-utils";
-import { panelClass, sectionLabelClass } from "./ui";
+import { inputClass, panelClass, sectionLabelClass } from "./ui";
 
 type NoteListProps = {
   // null while saved notes are still being read
   notes: Note[] | null;
+  // Whether any notes exist before filtering, to tell "empty" from "no match"
+  hasNotes: boolean;
   heading: string;
+  query: string;
+  onQueryChange: (query: string) => void;
   selectedId: string | null;
   onSelect: (id: string) => void;
 };
 
-export function NoteList({ notes, heading, selectedId, onSelect }: NoteListProps) {
+const emptyStateClass =
+  "flex flex-col items-center gap-2 rounded-xl border border-dashed border-slate-300 px-6 py-10 text-center dark:border-slate-700";
+
+export function NoteList({
+  notes,
+  hasNotes,
+  heading,
+  query,
+  onQueryChange,
+  selectedId,
+  onSelect,
+}: NoteListProps) {
   return (
     <section className={`${panelClass} flex flex-col gap-4 p-4 lg:w-80 lg:shrink-0 lg:overflow-hidden lg:p-5`}>
       <div className="flex items-end justify-between gap-2">
@@ -28,14 +43,42 @@ export function NoteList({ notes, heading, selectedId, onSelect }: NoteListProps
         )}
       </div>
 
+      <label className="relative">
+        <span className="sr-only">Search notes</span>
+        <SearchIcon className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+        <input
+          type="search"
+          value={query}
+          onChange={(e) => onQueryChange(e.target.value)}
+          className={`${inputClass} pl-10`}
+          placeholder="Search titles and notes…"
+        />
+      </label>
+
       <div className="-mx-1 flex-1 px-1 lg:overflow-y-auto">
-        {notes === null ? null : notes.length === 0 ? (
-          <div className="flex flex-col items-center gap-2 rounded-xl border border-dashed border-slate-300 px-6 py-10 text-center dark:border-slate-700">
+        {notes === null ? null : !hasNotes ? (
+          <div className={emptyStateClass}>
             <NotebookPenIcon className="h-8 w-8 text-teal-500 dark:text-teal-400" />
             <p className="font-semibold text-slate-900 dark:text-slate-100">Your space is ready</p>
             <p className="text-sm text-slate-500 dark:text-slate-400">
               Your first note will appear here once it&apos;s saved.
             </p>
+          </div>
+        ) : notes.length === 0 ? (
+          <div role="status" className={emptyStateClass}>
+            <SearchIcon className="h-8 w-8 text-slate-400" />
+            <p className="font-semibold text-slate-900 dark:text-slate-100">No notes match</p>
+            <p className="text-sm text-slate-500 [overflow-wrap:anywhere] dark:text-slate-400">
+              Nothing in {heading === "All notes" ? "your notes" : heading} contains &ldquo;
+              {query.trim()}&rdquo;.
+            </p>
+            <button
+              type="button"
+              onClick={() => onQueryChange("")}
+              className="text-sm font-medium text-teal-700 underline underline-offset-2 hover:text-teal-600 dark:text-teal-300"
+            >
+              Clear search
+            </button>
           </div>
         ) : (
           <ul className="flex flex-col gap-2">
